@@ -1,0 +1,29 @@
+name: Build LaTeX PDF
+on: [pull_request]
+
+jobs:
+  pdf:
+    name: Build PDF files
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Latex journee visu (2025)
+      uses: xu-cheng/latex-action@v3
+      with:
+        root_file: 2025-journee-visu/abstract.tex
+
+    - name: Upload journee visu (2025)
+      uses: actions/upload-artifact@v3
+      id: journee-visu-2025
+      with:
+        name: journee-visu-pdf
+        path: 2025-journee-visu/abstract.pdf
+
+    - name: Add comment on PR
+      uses: thollander/actions-comment-pull-request@v3
+      with:
+        message: ':memo: Journee Visu 2025: [PDF](${{steps.journee-visu-2025.outputs.artifact_url}})'
+        comment-tag: papers

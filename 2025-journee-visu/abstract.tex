@@ -1,0 +1,134 @@
+% ---------------------------------------------------------------------------
+\documentclass[10pt,journal,cspaper,compsoc]{journeevisu}
+
+% ------------------------------------------------------------------------
+
+\usepackage[pdftex]{graphicx} 
+
+\usepackage{t1enc}
+
+\usepackage{cite}
+\usepackage{hyperref}
+
+
+\TitreVisu{F3D}{A fast and minimalist 3D viewer}
+\ShortBib{F3D}
+
+\author{ Michael Migliore
+\IEEEcompsocitemizethanks{
+\IEEEcompsocthanksitem Michael Migliore: f3d-app foundation
+  \protect\\E-mail: contact@f3d.app
+}
+}
+
+% ------------------------------------------------------------------------
+
+\IEEEcompsoctitleabstractindextext{
+
+\begin{abstract}
+F3D is a fast, minimalist, and modern 3D viewer designed for data visualization workflows. It provides high-quality rendering, broad format support, and a powerful command-line interface—making it ideal for quick inspection, automation, and reproducibility. Lightweight yet extensible, F3D bridges the gap between complex 3D software and limited viewers, empowering a large target audience with an open-source tool tailored to their needs.
+\end{abstract}
+
+}
+
+\begin{document}
+
+\maketitle
+
+%-------------------------------------------------------------------------
+\section{Introduction}
+
+In many data visualization workflows, users often face the challenge of inspecting complex 3D datasets using heavy and monolithic applications. Tools like ParaView~\cite{ayachit2012paraview} or Blender are powerful, but they can be overkill for simple visualization tasks or quick previews. This is where \textbf{F3D} (Fig.~\ref{fig:typical}) comes in as a fast, minimalist, and modern 3D viewer designed to be the go-to tool for quick 3D visualization, without compromising on quality or flexibility.
+
+F3D is an open-source, cross-platform application for viewing 3D models and scenes. Originally developed at Kitware, it is now maintained as a community-driven project. F3D is lightweight, scriptable, and efficient, making it particularly suited for data visualization tasks where speed, clarity, and automation are essential.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\linewidth]{typical.png}
+  \caption{A typical rendering in F3D.}
+  \label{fig:typical}
+\end{figure}
+
+\section{Motivation and Design Goals}
+
+F3D was born from a practical need: the ability to quickly preview 3D data files without launching a full application. Whether it's a scientific dataset from a simulation or a scan, a crafted CAD model (Fig.~\ref{fig:watch}), or an artistic asset (Fig.~\ref{fig:pbr}), F3D aims to \emph{"just work"} instantly, and with high-quality rendering by default.
+
+The project focuses on:
+\begin{itemize}
+    \item \textbf{Simplicity}: zero-configuration by default.
+    \item \textbf{Performance}: fast startup and low resource usage.
+    \item \textbf{Versatility}: broad format support and CLI or Python automation.
+    \item \textbf{Extensibility}: plugin system for custom readers.
+\end{itemize}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\linewidth]{watch.png}
+  \caption{A CAD model rendering in F3D (STEP file).}
+  \label{fig:watch}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1\linewidth]{pbr.png}
+  \caption{A physically-based rendering in F3D (glTF file).}
+  \label{fig:pbr}
+\end{figure}
+
+\section{Key Features}
+
+F3D provides a rich set of features out-of-the-box:
+\begin{itemize}
+    \item \textbf{Wide format support}: >30 file formats, including STEP, glTF, USD, VTP, FBX.
+    \item \textbf{Physically-based rendering}: real-time PBR with tone mapping, HDRi lighting, ambient occlusion, and anti-aliasing.
+    \item \textbf{Powerful CLI and scripting}: ideal for integrating into data pipelines or batch processing.
+    \item \textbf{Lightweight GUI}: optional minimal interface for interactive exploration.
+    \item \textbf{Cross-platform}: available on Linux, macOS, and Windows. Easily installable via package managers, Homebrew, pip, etc.
+    \item \textbf{Open ecosystem}: permissive BSD license, plugin system, and active community.
+\end{itemize}
+
+\section{Applications in Data Visualization}
+
+F3D has proven useful in a variety of data-centric domains:
+\begin{itemize}
+    \item \textbf{Scientific visualization}: for fast inspection of CFD, FEM, or medical datasets.
+    \item \textbf{Engineering workflows}: to check geometry, topology, or simulation results.
+    \item \textbf{Artist tools}: as a lightweight viewer for quick search in large asset databases.
+    \item \textbf{Automation}: test rendering regressions in CI, generate thumbnails, or script batch exports.
+\end{itemize}
+
+Its CLI-first design makes it ideal for automated pipelines, but interactive usage for quick glance on the data is also possible.
+
+\section{Library SDK}
+
+F3D provides a C++ SDK for developers to create custom plugins and extend the viewer's capabilities. This allows users to add support for new file formats for a format not yet supported, or for a custom prioprietary format.
+The library can also be used to integrate F3D into other applications, enabling seamless 3D visualization within existing workflows.
+While the library is written in C++, it can be used from Python, thanks to the bindings provided by the F3D Python module. This allows developers to leverage the power of F3D's rendering engine and file format support within their own Python applications. The module can be installed via pip, making it easy to integrate into existing Python projects.
+The SDK is designed to be user-friendly, with clear documentation and examples to help developers get started quickly. This extensibility is a key feature of F3D, allowing it to adapt to the needs of its users and the evolving landscape of 3D data formats.
+
+\section{Community and Development}
+
+F3D is actively developed and maintained by volunteers. It has gained a strong following on GitHub (3.4k+ stars), with hundred of thousands of downloads worldwide. Packaged in many major Linux distributions, it is now a reliable part of many open-source toolchains.
+
+The project encourages contributions and plugin development, allowing users to tailor F3D to specific visualization needs.
+
+\section{Conclusion}
+
+F3D offers a sweet spot between complex 3D tools and limited viewers. It is ideal for users who need fast, high-quality 3D visualization in a reproducible, automatable way. As the project grows, we aim to add more file formats support, improve existing ones, explore web-based integration, and ship a native Android version.
+
+Whether you're a researcher, engineer, or developer, F3D is here to make 3D data visualization fast, elegant, and open.
+
+\section{Links}
+
+\begin{itemize}
+    \item GitHub: \href{https://github.com/f3d-app/f3d}{\texttt{https://github.com/f3d-app/f3d}}
+    \item Website: \href{https://f3d.app}{\texttt{https://f3d.app}}
+\end{itemize}
+
+
+%-------------------------------------------------------------------------
+\bibliographystyle{abbrv}
+\bibliography{abstract}
+
+%-------------------------------------------------------------------------
+\end{document}
