@@ -42,6 +42,8 @@ This is why we need a cache.
 A cache is simple concept in CI where, when doing something, you recover that something and store it somewhere, so that the next time you do it, instead of doing it, you recover it,
 which is much faster.
 
+Both github actions and gitlab CI supports caches.
+
 So when building any dependencies above, instead of cloning, configuring, building, installing, we could instead:
 
 ```mermaid
@@ -75,11 +77,9 @@ So let's imagine we want to check the optional dependency truly is optional, so 
 
 And it works great! However, when we change the version of the main dependency, then its cache will be invalidated, which will result on a simultaneous build of the main dependencies, building it effectively two times (actually, many times) instead of building it once where it would have been enough, before then using the dependency cache.
 
-A solution for that is "cache pre-heating" where we ensure the caches are ready before doing the proper CI.
+A solution for that is "cache preheating" where we ensure the caches are ready before doing the proper CI.
 
-In certain CI system (such as gitlab), the pre-heating part is designed in and not really needed, but in github actions, it really is not when using the matrix mechanism.
-
-## Step 4: Cache pre-heating
+## Step 4: Cache preheating
 
 In order to ensure the cache are ready before being used in the proper CI, we can add a dedicated step for that, it would look like this:
 
@@ -117,30 +117,64 @@ With compiled language, the platform (as in, Linux, macOS, Windows) matters a lo
 ```
 
 It stills works great and can scale up properly, however, in real-world implementation, those cross-platform cache-preheating steps are usually done using a matrix system.
-This is specific to github actions and may not be an issue on other CI systems. The next sections are github specific.
+Both github actions and gitlab CI support matrix systems.
 
 So in the case of using a matrix, the "Build and install main dep with cache" steps, although very fast when cache is already computed, still requires a runner to pick the job to check.
-Obviously this runner is of the needed platform in case the cache needs to be rebuilt, which means that the cache pre-heating steps act as some kind of a cross platform barrier, preventing
+Obviously this runner must be of the needed platform in case the cache needs to be rebuilt, which means that the cache preheating steps act as some kind of a cross platform barrier, preventing
 high available runner (such as Linux generally) to start working until all caches have been checked.
 
 ## Step 6: Splitting the matrix and handling of versions
 
-The obvious solution of the cross-platform cache pre-heating barrier is NOT to use a matrix in that case, but it can mean lots and lots of duplication of CI code, as matrix are used indeed for a reason.
-Indeed, most of the top-level CI code at this point is not the CI logic but the transfer of the information of the version to build, as this information should be centralized somewhere for easier update.
+The obvious solution of the cross-platform cache preheating barrier is NOT to use a matrix in that case, but it can mean lots and lots of duplication of CI code, as matrix are used indeed for a reason.
+The resulting chart is the same as above however the actual implementation is very different with lots of duplication.
 
+Indeed, most of the top-level CI code at this point is not the CI logic but the transfer of the information of the version to build, as this information should be centralized somewhere for easier update.
 There are different ways to do that, but F3D does it using a JSON file parsed using jq.
 
-Splitting the matrix would mean duplicating the version information many more times, so a solution is to NOT parse early buit instead parse only when needed using a dedicated code (github action).
-This make the cache pre-heating step is way less verbose and can be splitted without duplicated hunderds of CI code.
+Splitting the matrix would mean duplicating the version information many more times, so a solution is to NOT parse early buit instead parse only when needed using a dedicated code.
+This make the cache preheating step is way less verbose and can be splitted without duplicated hundreds of lines of CI code.
 
-But it also means cache pre-heating could be even more efficient.
+But it also means cache preheating could be even more efficient.
 
-## Step 7: Cache pre-heating for everyone
+## Step 7: Cache preheating for everyone
 
-If the cache pre-heating step is less verbose, it also means it is not bound to evolve much.
-Cache in github is stored "by branch" and only hit master/main branch once the branch is merged.
-When updating a dependency, it means the cache is created once in the branch, then created again on the merge, building it two times for no reason.
+Instead of handling cache preheating by branch, we could consider building it once and them making it availaible for everyone.
 
-Using a `pull_request_target` workflow for cache pre-heating let the cache being built directly on the main/master branch for everyone to use right away.
+In gitlab CI, this is handled in security settings.
+In github actions, this require the uses of a `pull_request_target` workflow that also comes with security concerns.
+So let's assume only trusted contributors can run this workflow and no cache poisonning can occur.
 
-This means that creating a bad cache would also impact everyone so cache pre-heating should be restricted to maintainers only.
+It now means that when updating a dependency, instead of creating the cache in the branch, then creating again once the branch is merged,
+we can build the cache only once and make it available right away.
+
+So here is how it looks:
+
+```mermaid
+  flowchart LR
+      A[Build and install main dep with cache for Linux]
+      D[Build and install optional dep with cache for Linux]
+      J[Build and install main dep with cache for Windows]
+```
+
+```mermaid
+  flowchart LR
+      B[Recover main dep cache for Linux]-->F[Build software for Linux]
+      E[Recover optional dep cache for Linux]-->F
+      F-->G[Test software for Linux]
+      C[Recover main dep cache for Linux]-->H[Build software without optional dep for Linux]
+      H-->I[Test software without optional dep for Linux]
+      K[Recover main dep cache for Windows]-->L[Build software for Windows]
+      L-->M[Test software for Windows]
+```
+
+This way, the caching part is a disconnected workflow, this is maintainers only.
+It is run on the master/main branch and is available for everyone to use as soon as it is done, using the version information from the branch from the request.
+
+If, for some reason, the cache is not available, the "Recover cache" steps are still able to build, but we all the caveats mentionned in the previous steps.
+
+## Conclusion
+
+We have shown that, even in a pretty simple usecase, looking for optimizing compilation occurence in a CI context, in a cross-platform everionnement let specific patterns
+occurs and that using proper cache preheating is a scallable solution than can be deployed in different CI systems.
+
+A live implementation (github actions) is available on the [F3D repository](https://github.com/f3d-app/f3d/blob/master/.github/workflows/cache-preheating.yml).
